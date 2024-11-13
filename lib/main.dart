@@ -1,3 +1,4 @@
+import 'package:currency/widget/custom_field_text.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -38,12 +39,59 @@ class Home extends StatefulWidget {
 }
 
 class _HomeState extends State<Home> {
+  final realController = TextEditingController();
+  final dolarController = TextEditingController();
+  final euroController = TextEditingController();
+
+  double dolar = 1;
+  double euro = 1;
+  double real = 1;
+
+  void _realChanged(String text) {
+    if (text.isEmpty) {
+      dolarController.clear();
+      euroController.clear();
+      return;
+    }
+    double real = double.parse(text);
+    dolarController.text = (real / dolar).toStringAsFixed(2);
+    euroController.text = (real / euro).toStringAsFixed(2);
+  }
+
+  void _dolarChanged(String text) {
+    if (text.isEmpty) {
+      realController.clear();
+      euroController.clear();
+      return;
+    }
+    double dolar = double.parse(text);
+    realController.text = (dolar * this.dolar).toStringAsFixed(2);
+    euroController.text = (dolar * this.dolar / euro).toStringAsFixed(2);
+  }
+
+  void _euroChanged(String text) {
+    if (text.isEmpty) {
+      realController.clear();
+      dolarController.clear();
+      return;
+    }
+    double euro = double.parse(text);
+    realController.text = (euro * this.euro).toStringAsFixed(2);
+    dolarController.text = (euro * this.euro / dolar).toStringAsFixed(2);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.black,
       appBar: AppBar(
-        title: const Text("\$ Conversor \$"),
+        title: const Text(
+          "\$ Conversor \$",
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            fontSize: 30.0,
+          ),
+        ),
         backgroundColor: Colors.amber,
         centerTitle: true,
       ),
@@ -80,7 +128,42 @@ class _HomeState extends State<Home> {
                   ),
                 );
               } else {
-                return Container(color: Colors.green);
+                dolar = snapshot.data!["results"]["currencies"]["USD"]["buy"];
+                euro = snapshot.data!["results"]["currencies"]["EUR"]["buy"];
+                return SingleChildScrollView(
+                  padding: const EdgeInsets.all(10),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      const Icon(
+                        Icons.monetization_on,
+                        size: 150.0,
+                        color: Colors.amber,
+                      ),
+                      const Divider(),
+                      CustomFieldText(
+                        labelText: "Real",
+                        prefixText: "R\$",
+                        controllerText: realController,
+                        onChagedFunction: _realChanged,
+                      ),
+                      const Divider(),
+                      CustomFieldText(
+                        labelText: "Dólar",
+                        prefixText: "US\$",
+                        controllerText: dolarController,
+                        onChagedFunction: _dolarChanged,
+                      ),
+                      const Divider(),
+                      CustomFieldText(
+                        labelText: "Euro",
+                        prefixText: "€",
+                        controllerText: euroController,
+                        onChagedFunction: _euroChanged,
+                      ),
+                    ],
+                  ),
+                );
               }
           }
         },
